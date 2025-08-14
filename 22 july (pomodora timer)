@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Pomodoro Timer</title>
+<style> body {
+      font-family: Arial;
+      text-align: center;
+      background: #f0f0f0;
+      padding: 40px;
+    }
+    .container {
+      background: #9ea3f5;
+      padding: 20px;
+      border-radius: 12px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 50px;
+      text-align: center;
+      margin: 5px;
+    }
+    .timer {
+      font-size: 48px;
+      margin: 20px 0;
+      color: #e74c3c;
+    }
+    .session {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .controls button {
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+    }
+    .indicators {
+      font-size: 24px;
+      margin-top: 10px;
+    }</style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍅 Pomodoro Timer</h1>
+
+    <div>
+      Work: <input id="work" type="number" value="25">min
+      Break: <input id="shortBreak" type="number" value="5">min
+      Long Break: <input id="longBreak" type="number" value="15">min
+      Cycles: <input id="cycles" type="number" value="4">
+    </div>
+
+    <div class="session" id="sessionLabel">Session: Work</div>
+    <div class="timer" id="timer">25:00</div>
+
+    <div class="controls">
+      <button onclick="start()">Start</button>
+      <button onclick="pause()">Pause</button>
+      <button onclick="reset()">Reset</button>
+    </div>
+
+    <div class="indicators" id="indicator">⚪ ⚪ ⚪ ⚪</div>
+  </div>
+
+  <script> let timerInterval;
+    let isRunning = false;
+    let timeLeft = 0;
+    let currentSession = 'work';
+    let completedPomodoros = 0;
+
+    function getValues() {
+      return {
+        work: parseInt(document.getElementById('work').value) * 60,
+        shortBreak: parseInt(document.getElementById('shortBreak').value) * 60,
+        longBreak: parseInt(document.getElementById('longBreak').value) * 60,
+        cycles: parseInt(document.getElementById('cycles').value)
+      };
+    }
+
+    function updateTimerDisplay() {
+      const min = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const sec = String(timeLeft % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = `${min}:${sec}`;
+    }
+
+    function updateSessionLabel() {
+      let label = 'Session: ';
+      if (currentSession === 'work') label += 'Work';
+      else if (currentSession === 'shortBreak') label += 'Short Break';
+      else label += 'Long Break';
+      document.getElementById('sessionLabel').textContent = label;
+    }
+
+    function updateIndicators() {
+      const { cycles } = getValues();
+      let dots = '';
+      for (let i = 0; i < cycles; i++) {
+        dots += i < completedPomodoros ? '🔴 ' : '⚪ ';
+      }
+      document.getElementById('indicator').textContent = dots.trim();
+    }
+
+    function start() {
+      if (isRunning) return;
+      isRunning = true;
+      if (timeLeft === 0) setSession(currentSession);
+
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateTimerDisplay();
+        } else {
+          clearInterval(timerInterval);
+          isRunning = false;
+          nextSession();
+        }
+      }, 1000);
+    }
+
+    function pause() {
+      clearInterval(timerInterval);
+      isRunning = false;
+    }
+
+    function reset() {
+      pause();
+      completedPomodoros = 0;
+      currentSession = 'work';
+      setSession('work');
+      updateIndicators();
+    }
+
+    function setSession(session) {
+      const values = getValues();
+      currentSession = session;
+      if (session === 'work') timeLeft = values.work;
+      if (session === 'shortBreak') timeLeft = values.shortBreak;
+      if (session === 'longBreak') timeLeft = values.longBreak;
+      updateSessionLabel();
+      updateTimerDisplay();
+    }
+
+    function nextSession() {
+      const values = getValues();
+
+      if (currentSession === 'work') {
+        completedPomodoros++;
+        if (completedPomodoros % values.cycles === 0) {
+          setSession('longBreak');
+        } else {
+          setSession('shortBreak');
+        }
+      } else {
+        setSession('work');
+      }
+
+      updateIndicators();
+      start(); // auto start next session
+    }
+
+    // Initialize
+    setSession('work');
+    updateIndicators();</script>
+</body>
+</html>
