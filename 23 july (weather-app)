@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather App</title>
+  <style>body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(to right, #74ebd5, #acb6e5);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+}
+
+input[type="text"] {
+  padding: 10px;
+  width: 70%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  margin-top: 10px;
+  margin-left: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+.hidden {
+  display: none;
+}
+
+.error {
+  color: red;
+  margin-top: 1rem;
+} </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌤️ Weather App</h1>
+    <form id="weatherForm">
+      <input type="text" id="locationInput" placeholder="Enter city or location" required />
+      <button type="submit">Get Weather</button>
+    </form>
+
+    <div id="weatherDisplay" class="hidden">
+      <h2 id="locationName"></h2>
+      <p><strong>Temperature:</strong> <span id="temperature"></span>°C</p>
+    </div>
+
+    <p id="error" class="error hidden">Location not found. Please try again.</p>
+  </div>
+<script>const form = document.getElementById("weatherForm");
+const locationInput = document.getElementById("locationInput");
+const locationName = document.getElementById("locationName");
+const temperature = document.getElementById("temperature");
+const weatherDisplay = document.getElementById("weatherDisplay");
+const errorMsg = document.getElementById("error");
+
+const apiKey = "51a8ae24545a404da6932934250508";
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const location = locationInput.value.trim();
+  if (!location) return;
+
+  const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}&aqi=yes`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Invalid response");
+
+    const data = await response.json();
+
+    locationName.textContent = `${data.location.name}, ${data.location.country}`;
+    temperature.textContent = data.current.temp_c;
+
+    weatherDisplay.classList.remove("hidden");
+    errorMsg.classList.add("hidden");
+  } catch (error) {
+    weatherDisplay.classList.add("hidden");
+    errorMsg.classList.remove("hidden");
+  }
+}); </script>
+</body>
+</html>
